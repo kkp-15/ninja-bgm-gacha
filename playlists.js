@@ -1,12 +1,16 @@
 function runGacha(){
-  /* …略… */
+  const list = window.PLAYLISTS.playlists;
   const pick = list[Math.floor(Math.random()*list.length)];
 
-  // ▼▼ ここが “動画 or プレイリスト” 判定         ← 必ず入っているか確認
-  const url = pick.id.startsWith("PL")
-    ? `https://www.youtube.com/embed?listType=playlist&list=${pick.id}&autoplay=1&playsinline=1&controls=1`
-    : `https://www.youtube.com/embed/${pick.id}?autoplay=1&playsinline=1&controls=1`;
+  // ── 動画IDかプレイリストIDか判定
+  const isPlaylist = pick.id.startsWith("PL");
 
-  player.src = url;
-  /* …略… */
+  // ── 埋め込みURLを分岐生成
+  const url = isPlaylist
+    ? `https://www.youtube.com/embed?listType=playlist&list=${pick.id}&autoplay=1&playsinline=1&controls=1`
+    : `https://www.youtube.com/embed/${pick.id}?autoplay=1&playsinline=1&loop=1&playlist=${pick.id}&controls=1`;
+
+  player.src = url;                      // ← ここにセット
+  titleEl.textContent = '🎧 ' + pick.title;
+  resBox.style.display = 'block';
 }
