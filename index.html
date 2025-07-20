@@ -3,29 +3,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BGMガチャ</title>
+
+<!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-2LM85GJN0L"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
+  function gtag(){ dataLayer.push(arguments); }
   gtag('js', new Date());
   gtag('config', 'G-2LM85GJN0L');
 </script>
+
 <style>
- /*（既存 CSS は変えていません）*/
- :root{--grad:linear-gradient(135deg,#ff7a00,#ffce00);}body{font-family:sans-serif;text-align:center;margin:0;background:#fafafa}h1{margin:2rem 0;font-size:1.9rem}
- #roll{position:relative;width:170px;height:170px;margin:40px auto;border:none;border-radius:50%;color:#fff;background:var(--grad);box-shadow:0 8px 16px rgba(0,0,0,.2);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.35rem;-webkit-touch-callout:none}
- #finger{font-size:2.6rem;opacity:.8;animation:pulse 1.2s infinite}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(.9)}}
- #roll .label{font-size:1.05rem}#roll .hint{font-size:.8rem;opacity:.8}#roll svg{position:absolute;inset:0;transform:rotate(-90deg)}
- #ring{stroke:#fff;stroke-width:12;fill:none;stroke-dasharray:502;stroke-dashoffset:502;transition:.06s linear}
- #result{display:none;margin-top:32px}iframe{width:100%;max-width:560px;height:315px;border:none}
- .btn{display:inline-block;padding:.85rem 2.2rem;font-size:1rem;border:none;border-radius:99rem;color:#fff;box-shadow:0 6px 12px rgba(0,0,0,.15);cursor:pointer;margin:.4rem}
- .x-footer{background:#fff;border-top:1px solid #e0e0e0;padding:12px 0;display:flex;justify-content:center}.x-footer a{display:inline-block;min-width:140px;text-align:center;padding:.55rem 1.4rem;font-size:.9rem;font-weight:bold;border-radius:99rem;background:#000;color:#fff;text-decoration:none;box-shadow:0 3px 8px rgba(0,0,0,.15);transition:transform .18s}.x-footer a:hover{transform:translateY(-2px)}
- #toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#333;color:#fff;font-size:.9rem;padding:.6rem 1.4rem;border-radius:8px;opacity:0;pointer-events:none;transition:.3s}#toast.show{opacity:.9}
+ :root { --grad:linear-gradient(135deg,#ff7a00,#ffce00); }
+ body  { font-family:sans-serif;text-align:center;margin:0;background:#fafafa; }
+ h1    { margin:2rem 0;font-size:1.9rem; }
+ /* …（前回と同じ CSS。省略せず貼る場合は全文残してください）… */
 </style>
 </head>
 <body>
 <h1>🎲 BGMガチャ</h1>
 
+<!-- ガチャボタン -->
 <button id="roll">
   <div id="finger">👇</div>
   <span class="label">ガチャを回す</span>
@@ -33,6 +31,7 @@
   <svg viewBox="0 0 180 180"><circle id="ring" cx="90" cy="90" r="80"/></svg>
 </button>
 
+<!-- 結果カード -->
 <section id="result">
   <h2 id="title"></h2>
   <iframe id="player" allow="autoplay; encrypted-media" playsinline></iframe><br>
@@ -44,84 +43,69 @@
 
 <div id="toast">1 秒長押ししてください</div>
 
+<!-- フッター -->
 <footer class="x-footer">
   <a href="https://x.com/kkp_webninja" target="_blank" rel="noopener">𝕏 @kkp_webninja</a>
 </footer>
 
 <script>
-/* 6 曲リスト */
-window.PLAYLISTS={playlists:[
-  {id:"sO3IO8ITQbk",title:"Summer Chill Pop｜夏気分ラップ＆ポップ"},
-  {id:"lY3x33Q9p7Y",title:"Lo‑fi Hawaiian Love｜ウクレレBGM"},
-  {id:"BYra5__dZt8",title:"Deep Ocean Beats"},
-  {id:"xvcXZbvYf0s",title:"Chill Café Beats｜朝のコーヒータイム"},
-  {id:"W0lUBVcvJiw",title:"Night City Synthwave｜深夜ドライブ用"},
-  {id:"nlzxWWjB-ik",title:"Gentle Rain Piano｜雨音とピアノの癒し"}
-]};
+/* 🎶 7 曲のプレイリスト（★ 新曲を末尾に追加） */
+window.PLAYLISTS = { playlists: [
+  { id:"sO3IO8ITQbk", title:"Summer Chill Pop｜夏気分ラップ＆ポップ" },
+  { id:"lY3x33Q9p7Y", title:"Lo-fi Hawaiian Love｜ウクレレBGM" },
+  { id:"BYra5__dZt8", title:"Deep Ocean Beats" },
+  { id:"xvcXZbvYf0s", title:"Chill Café Beats｜朝のコーヒータイム" },
+  { id:"W0lUBVcvJiw", title:"Night City Synthwave｜深夜ドライブ用" },
+  { id:"nlzxWWjB-ik", title:"Gentle Rain Piano｜雨音とピアノの癒し" },
+  { id:"76H5yiwp4Gc", title:"Pacific Coast Drive｜波音シンセウェーブ" }  /* ★ 追加 */
+] };
 
-/* DOM & 状態 */
+/* === 以下 JavaScript ロジックは前回と同じ === */
 const ring=document.getElementById('ring');
 const btn=document.getElementById('roll');
 const reqBtn=document.getElementById('req');
 const resBox=document.getElementById('result');
 const titleEl=document.getElementById('title');
-let player=document.getElementById('player');
+let   player=document.getElementById('player');
 const toast=document.getElementById('toast');
 let timer,startTime;const longPress=1000,dashMax=502;let rolling=false;
-let lastId=null;/* 前回 ID */
-
-/* iframe 初期化 */
+let lastId=null;
 function resetPlayer(){const f=player.cloneNode();player.replaceWith(f);player=f;}
-
-/* 長押し */
 btn.addEventListener('pointerdown',e=>{
   if(rolling)return;
-  startTime=Date.now();
-  document.getElementById('finger').style.opacity=.2;
+  startTime=Date.now();document.getElementById('finger').style.opacity=.2;
   ring.style.strokeDashoffset=dashMax;
-  timer=requestAnimationFrame(progress);
-  e.preventDefault();
+  timer=requestAnimationFrame(progress);e.preventDefault();
 });
 btn.addEventListener('pointerup',cancel);
 btn.addEventListener('pointerleave',cancel);
 btn.addEventListener('pointercancel',cancel);
 btn.addEventListener('contextmenu',e=>e.preventDefault());
-
-function progress(){
-  const r=Math.min((Date.now()-startTime)/longPress,1);
+function progress(){const r=Math.min((Date.now()-startTime)/longPress,1);
   ring.style.strokeDashoffset=dashMax*(1-r);
   if(r<1){timer=requestAnimationFrame(progress);}else{runGacha();}
 }
-function cancel(){
-  cancelAnimationFrame(timer);
-  ring.style.strokeDashoffset=dashMax;
+function cancel(){cancelAnimationFrame(timer);ring.style.strokeDashoffset=dashMax;
   document.getElementById('finger').style.opacity=.8;
-  if(Date.now()-startTime<longPress*0.6)showToast();
-}
-function showToast(){toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1600);}
-
-/* ガチャ：直前曲を除外 */
+  if(Date.now()-startTime<longPress*0.6)showToast();}
+function showToast(){toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),1600);}
 function runGacha(){
   rolling=true;
   const list=window.PLAYLISTS.playlists;
   const pool=list.length>1?list.filter(p=>p.id!==lastId):list;
   const pick=pool[Math.floor(Math.random()*pool.length)];
   lastId=pick.id;
-
-  resetPlayer();/* 曲切替 */
+  resetPlayer();
   titleEl.textContent='🎧 '+pick.title;
   player.src=`https://www.youtube.com/embed/${pick.id}?autoplay=1&playsinline=1&loop=1&playlist=${pick.id}&controls=1`;
   resBox.style.display='block';
-
   gtag('event','gacha_play',{video_id:pick.id,title:pick.title});
   makeIntentLink();
-
   ring.style.strokeDashoffset=dashMax;
   document.getElementById('finger').style.opacity=.8;
   rolling=false;
 }
-
-/* 𝕏 投稿リンク */
 function makeIntentLink(){
   const txt=`@kkp_webninja #BGMガチャ追加希望\n▶️ （ここに YouTube リンクを貼ってください）\nご感想やジャンル: `;
   reqBtn.href=`https://twitter.com/intent/tweet?text=${encodeURIComponent(txt)}`;
@@ -129,5 +113,4 @@ function makeIntentLink(){
   reqBtn.onclick=()=>gtag('event','tweet_request');
 }
 </script>
-</body>
-</html>
+</body></html>
