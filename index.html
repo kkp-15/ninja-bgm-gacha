@@ -3,6 +3,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BGMガチャ</title>
+
+<!-- === Google Analytics (GA4) === -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2LM85GJN0L"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-2LM85GJN0L');
+</script>
+<!-- ============================== -->
+
 <style>
  :root { --grad:linear-gradient(135deg,#ff7a00,#ffce00); }
  body  { font-family:sans-serif;text-align:center;margin:0;background:#fafafa; }
@@ -12,9 +23,9 @@
  #roll{
   position:relative;width:170px;height:170px;margin:40px auto 0;
   border:none;border-radius:50%;color:#fff;background:var(--grad);
-  box-shadow:0 8px 16px rgba(0,0,0,.2);user-select:none;cursor:pointer;
+  box-shadow:0 8px 16px rgba(0,0,0,.2);cursor:pointer;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:.35rem;-webkit-touch-callout:none;      /* Chromebook 長押しメニュー抑制 */
+  gap:.35rem;-webkit-touch-callout:none;
  }
  #finger{font-size:2.6rem;opacity:.8;animation:pulse 1.2s infinite;}
  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(.9);} }
@@ -62,7 +73,7 @@
 <div id="toast">1 秒長押ししてください</div>
 
 <script>
-/* ── 動画 ID & タイトル一覧 ── */
+/* ── 動画IDとタイトル（好きに追加） ── */
 window.PLAYLISTS = { playlists: [
   { id:"sO3IO8ITQbk", title:"Summer Chill Pop｜夏気分ラップ＆ポップ" },
   { id:"lY3x33Q9p7Y", title:"Lo‑fi Hawaiian Love｜ウクレレBGM" },
@@ -71,7 +82,6 @@ window.PLAYLISTS = { playlists: [
 
 /* ── DOM & 状態 ── */
 const ring   = document.getElementById('ring');
-const finger = document.getElementById('finger');
 const btn    = document.getElementById('roll');
 const retry  = document.getElementById('retry');
 const reqBtn = document.getElementById('req');
@@ -85,7 +95,7 @@ let timer,startTime; const longPress=1000,dashMax=502; let rolling=false;
 /* ── 長押し判定 ── */
 btn.addEventListener('pointerdown',e=>{
   if(rolling) return;
-  startTime=Date.now();finger.style.opacity=.2;
+  startTime=Date.now();document.getElementById('finger').style.opacity=.2;
   timer=requestAnimationFrame(progress);e.preventDefault();
 });
 btn.addEventListener('pointerup',cancel);
@@ -100,32 +110,40 @@ function progress(){
 }
 function cancel(){
   cancelAnimationFrame(timer);
-  ring.style.strokeDashoffset=dashMax;finger.style.opacity=.8;
+  ring.style.strokeDashoffset=dashMax;
+  document.getElementById('finger').style.opacity=.8;
   if(Date.now()-startTime<longPress*0.6) showToast();
 }
 function showToast(){toast.classList.add('show');
   setTimeout(()=>toast.classList.remove('show'),1600);}
 
-/* ── ガチャ実行 ── */
+/* ── ガチャ実行（単一動画） ── */
 function runGacha(){
   if(rolling) return;rolling=true;
   const list=window.PLAYLISTS.playlists;
   const pick=list[Math.floor(Math.random()*list.length)];
+
   titleEl.textContent='🎧 '+pick.title;
   player.src=`https://www.youtube.com/embed/${pick.id}?autoplay=1&playsinline=1&loop=1&playlist=${pick.id}&controls=1`;
-  resBox.style.display='block';makeIntentLink();rolling=false;
+  resBox.style.display='block';
+
+  gtag('event','gacha_play',{video_id:pick.id,title:pick.title});  // GAイベント
+  makeIntentLink();
+  rolling=false;
 }
 
-/* ── 投稿リンク生成 ── */
+/* ── リクエスト投稿リンク ── */
 function makeIntentLink(){
   const template=`@kkp_webninja #BGMガチャ追加希望\n`+
-                  `▶️ （ここに YouTube リンクを貼ってください）\n`+
-                  `ご感想やジャンル: `;
+                 `▶️ （ここに YouTube リンクを貼ってください）\n`+
+                 `ご感想やジャンル: `;
   reqBtn.href=`https://twitter.com/intent/tweet?text=${encodeURIComponent(template)}`;
   reqBtn.target='_blank';reqBtn.rel='noopener';
 }
+reqBtn.addEventListener('click',()=>gtag('event','tweet_request'));
 
 /* ── リセット ── */
-retry.onclick=()=>{resBox.style.display='none';ring.style.strokeDashoffset=dashMax;};
+retry.onclick=()=>{resBox.style.display='none';ring.style.strokeDashoffset=dashMax;
+                   gtag('event','retry_click');};
 </script>
 </body></html>
