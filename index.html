@@ -42,18 +42,18 @@
         border:none;border-radius:99rem;background:var(--grad);color:#fff;
         box-shadow:0 6px 12px rgba(0,0,0,.15);cursor:pointer;margin:.4rem;}
 
- /* ── X フッターボタン ── */
+ /* ── X フッターバー（通常フロー） ── */
  .x-footer{
-   position:fixed;left:50%;bottom:12px;transform:translateX(-50%);
-   z-index:50;
+   background:#fff;border-top:1px solid #e0e0e0;
+   padding:12px 0;display:flex;justify-content:center;
  }
  .x-footer a{
-   display:inline-block;padding:.65rem 1.6rem;font-size:.9rem;font-weight:bold;
-   border-radius:99rem;background:#000;color:#fff;text-decoration:none;
-   box-shadow:0 4px 10px rgba(0,0,0,.25);
-   transition:transform .2s;
+   display:inline-block;min-width:140px;text-align:center;
+   padding:.55rem 1.4rem;font-size:.9rem;font-weight:bold;
+   border-radius:99rem;background:var(--grad);color:#fff;text-decoration:none;
+   box-shadow:0 3px 8px rgba(0,0,0,.15);transition:transform .18s;
  }
- .x-footer a:hover{transform:scale(1.06);}
+ .x-footer a:hover{transform:translateY(-2px);}
 
  /* ── トースト ── */
  #toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);
@@ -85,20 +85,18 @@
 
 <div id="toast">1 秒長押ししてください</div>
 
-<!-- 画面最下部に固定：X リンク -->
-<div class="x-footer">
+<!-- ── スクロールとともに流れる X フッター ── -->
+<footer class="x-footer">
   <a href="https://x.com/kkp_webninja" target="_blank" rel="noopener">@kkp_webninja</a>
-</div>
+</footer>
 
 <script>
-/* ── 動画ID & タイトル ── */
 window.PLAYLISTS = { playlists: [
   { id:"sO3IO8ITQbk", title:"Summer Chill Pop｜夏気分ラップ＆ポップ" },
   { id:"lY3x33Q9p7Y", title:"Lo‑fi Hawaiian Love｜ウクレレBGM" },
   { id:"BYra5__dZt8", title:"Deep Ocean Beats" }
 ] };
 
-/* ── DOM & 状態 ---- */
 const ring   = document.getElementById('ring');
 const btn    = document.getElementById('roll');
 const retry  = document.getElementById('retry');
@@ -110,7 +108,7 @@ const toast  = document.getElementById('toast');
 
 let timer,startTime; const longPress=1000,dashMax=502; let rolling=false;
 
-/* ── 長押し判定 ---- */
+/* 長押し判定 */
 btn.addEventListener('pointerdown',e=>{
   if(rolling) return;
   startTime=Date.now();document.getElementById('finger').style.opacity=.2;
@@ -135,7 +133,7 @@ function cancel(){
 function showToast(){toast.classList.add('show');
   setTimeout(()=>toast.classList.remove('show'),1600);}
 
-/* ── ガチャ ---- */
+/* ガチャ */
 function runGacha(){
   if(rolling) return;rolling=true;
   const list=window.PLAYLISTS.playlists;
@@ -149,7 +147,7 @@ function runGacha(){
   makeIntentLink();rolling=false;
 }
 
-/* ── リクエスト投稿リンク ---- */
+/* リクエスト投稿 */
 function makeIntentLink(){
   const template=`@kkp_webninja #BGMガチャ追加希望\n`+
                  `▶️ （ここに YouTube リンクを貼ってください）\n`+
@@ -159,7 +157,7 @@ function makeIntentLink(){
   reqBtn.onclick= ()=> gtag('event','tweet_request');
 }
 
-/* ── リセット ---- */
+/* リセット */
 retry.onclick=()=>{resBox.style.display='none';ring.style.strokeDashoffset=dashMax;
                    gtag('event','retry_click');};
 </script>
