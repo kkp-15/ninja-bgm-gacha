@@ -70,7 +70,7 @@
   <h2 id="title"></h2>
   <iframe id="player" allow="autoplay; encrypted-media" playsinline></iframe><br>
 
-  <!-- 𝕏 リクエスト投稿ボタン -->
+  <!-- 𝕏 リクエスト投稿 -->
   <a id="req" class="btn" style="background:#000">𝕏 リクエスト投稿</a>
 
   <p id="how" style="margin-top:.6rem;font-size:.8rem;color:#666">
@@ -85,11 +85,14 @@
 </footer>
 
 <script>
-/* プレイリスト */
+/* 6 曲のプレイリスト */
 window.PLAYLISTS = { playlists: [
   { id:"sO3IO8ITQbk", title:"Summer Chill Pop｜夏気分ラップ＆ポップ" },
   { id:"lY3x33Q9p7Y", title:"Lo‑fi Hawaiian Love｜ウクレレBGM" },
-  { id:"BYra5__dZt8", title:"Deep Ocean Beats" }
+  { id:"BYra5__dZt8", title:"Deep Ocean Beats" },
+  { id:"xvcXZbvYf0s", title:"Chill Café Beats｜朝のコーヒータイム" },
+  { id:"W0lUBVcvJiw", title:"Night City Synthwave｜深夜ドライブ用" },
+  { id:"nlzxWWjB-ik", title:"Gentle Rain Piano｜雨音とピアノの癒し" }
 ] };
 
 /* DOM & 状態 */
@@ -102,6 +105,7 @@ let   player = document.getElementById('player');
 const toast  = document.getElementById('toast');
 
 let timer,startTime; const longPress=1000,dashMax=502; let rolling=false;
+let lastId = null;  /* 直前曲 ID */
 
 /* iframe 初期化 */
 function resetPlayer(){
@@ -110,13 +114,13 @@ function resetPlayer(){
   player = newFrame;
 }
 
-/* 長押し開始：曲は止めずゲージ計測のみ */
+/* 長押し開始（曲は止めない） */
 btn.addEventListener('pointerdown',e=>{
   if(rolling) return;
-  startTime=Date.now();
-  document.getElementById('finger').style.opacity=.2;
-  ring.style.strokeDashoffset=dashMax;
-  timer=requestAnimationFrame(progress);
+  startTime = Date.now();
+  document.getElementById('finger').style.opacity = .2;
+  ring.style.strokeDashoffset = dashMax;
+  timer = requestAnimationFrame(progress);
   e.preventDefault();
 });
 btn.addEventListener('pointerup',cancel);
@@ -125,49 +129,55 @@ btn.addEventListener('pointercancel',cancel);
 btn.addEventListener('contextmenu',e=>e.preventDefault());
 
 function progress(){
-  const r=Math.min((Date.now()-startTime)/longPress,1);
-  ring.style.strokeDashoffset=dashMax*(1-r);
+  const r = Math.min((Date.now()-startTime)/longPress,1);
+  ring.style.strokeDashoffset = dashMax*(1-r);
   if(r<1){timer=requestAnimationFrame(progress);}else{runGacha();}
 }
 function cancel(){
   cancelAnimationFrame(timer);
-  ring.style.strokeDashoffset=dashMax;
-  document.getElementById('finger').style.opacity=.8;
-  if(Date.now()-startTime<longPress*0.6) showToast();
+  ring.style.strokeDashoffset = dashMax;
+  document.getElementById('finger').style.opacity = .8;
+  if(Date.now()-startTime < longPress*0.6) showToast();
 }
 function showToast(){
   toast.classList.add('show');
   setTimeout(()=>toast.classList.remove('show'),1600);
 }
 
-/* ガチャ本体：ここで初めて曲を切替 */
+/* ガチャ本体（同曲連続除外） */
 function runGacha(){
-  rolling=true;
-  const pick=window.PLAYLISTS.playlists[Math.floor(Math.random()*window.PLAYLISTS.playlists.length)];
+  rolling = true;
+  const list = window.PLAYLISTS.playlists;
+  let pick;
+  do{
+    pick = list[Math.floor(Math.random()*list.length)];
+  } while (pick.id === lastId && list.length > 1);
+  lastId = pick.id;
 
-  resetPlayer();   // ★ 旧曲を停止して新曲読み込み
+  resetPlayer();   // 旧曲停止 → 新曲読み込み
 
-  titleEl.textContent='🎧 '+pick.title;
-  player.src=`https://www.youtube.com/embed/${pick.id}?autoplay=1&playsinline=1&loop=1&playlist=${pick.id}&controls=1`;
-  resBox.style.display='block';
+  titleEl.textContent = '🎧 ' + pick.title;
+  player.src = `https://www.youtube.com/embed/${pick.id}?autoplay=1&playsinline=1&loop=1&playlist=${pick.id}&controls=1`;
+  resBox.style.display = 'block';
 
   gtag('event','gacha_play',{video_id:pick.id,title:pick.title});
   makeIntentLink();
 
-  ring.style.strokeDashoffset=dashMax;
-  document.getElementById('finger').style.opacity=.8;
-  rolling=false;
+  ring.style.strokeDashoffset = dashMax;
+  document.getElementById('finger').style.opacity = .8;
+  rolling = false;
 }
 
-/* X リクエスト投稿リンク */
+/* 𝕏 投稿リンク生成 */
 function makeIntentLink(){
-  const template=`@kkp_webninja #BGMガチャ追加希望\n`+
-                 `▶️ （ここに YouTube リンクを貼ってください）\n`+
-                 `ご感想やジャンル: `;
-  reqBtn.href=`https://twitter.com/intent/tweet?text=${encodeURIComponent(template)}`;
-  reqBtn.target='_blank';reqBtn.rel='noopener';
-  reqBtn.onclick=()=>gtag('event','tweet_request');
+  const template =
+    `@kkp_webninja #BGMガチャ追加希望\n` +
+    `▶️ （ここに YouTube リンクを貼ってください）\n` +
+    `ご感想やジャンル: `;
+  reqBtn.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(template)}`;
+  reqBtn.target = '_blank';
+  reqBtn.rel = 'noopener';
+  reqBtn.onclick = () => gtag('event','tweet_request');
 }
 </script>
-</body>
-</html>
+</body></html>
