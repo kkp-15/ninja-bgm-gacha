@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BGMガチャ</title>
 
-<!-- === Google Analytics (GA4) === -->
+<!-- === Google Analytics (GA4) === -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-2LM85GJN0L"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -12,7 +12,7 @@
   gtag('js', new Date());
   gtag('config', 'G-2LM85GJN0L');
 </script>
-<!-- ============================== -->
+<!-- ================================= -->
 
 <style>
  :root { --grad:linear-gradient(135deg,#ff7a00,#ffce00); }
@@ -32,8 +32,9 @@
  #roll .label{font-size:1.05rem;line-height:1.2;}
  #roll .hint {font-size:.8rem;opacity:.8;line-height:1;}
  #roll svg{position:absolute;inset:0;transform:rotate(-90deg);}
- #ring{stroke:#fff;stroke-width:12;fill:none;stroke-dasharray:502;
-       stroke-dashoffset:502;transition:stroke-dashoffset .06s linear;}
+ #ring{stroke:#fff;stroke-width:12;fill:none;
+       stroke-dasharray:502;stroke-dashoffset:502;
+       transition:stroke-dashoffset .06s linear;}
 
  /* ── 結果カード ── */
  #result{display:none;margin-top:32px;}
@@ -42,7 +43,7 @@
         border:none;border-radius:99rem;background:var(--grad);color:#fff;
         box-shadow:0 6px 12px rgba(0,0,0,.15);cursor:pointer;margin:.4rem;}
 
- /* ── X フッターバー（スクロールで流れる） ── */
+ /* ── X フッターバー ── */
  .x-footer{
    background:#fff;border-top:1px solid #e0e0e0;
    padding:12px 0;display:flex;justify-content:center;
@@ -75,10 +76,7 @@
 <section id="result">
   <h2 id="title"></h2>
   <iframe id="player" allow="autoplay; encrypted-media" playsinline></iframe><br>
-  <button id="retry" class="btn">もう一回！</button>
   <a id="req" class="btn" style="background:#4267B2">🎶 リクエスト投稿</a>
-
-  <!-- 説明 -->
   <p id="how" style="margin-top:.6rem;font-size:.8rem;color:#666">
     🎥 YouTubeアプリで <b>共有→リンクをコピー</b><br>貼り付けて投稿してください
   </p>
@@ -91,30 +89,35 @@
 </footer>
 
 <script>
-/* 動画リスト */
+/* ── 再生リスト ── */
 window.PLAYLISTS = { playlists: [
   { id:"sO3IO8ITQbk", title:"Summer Chill Pop｜夏気分ラップ＆ポップ" },
   { id:"lY3x33Q9p7Y", title:"Lo‑fi Hawaiian Love｜ウクレレBGM" },
   { id:"BYra5__dZt8", title:"Deep Ocean Beats" }
 ] };
 
-/* DOM & 状態 */
+/* ── DOM & 状態 ---- */
 const ring   = document.getElementById('ring');
 const btn    = document.getElementById('roll');
-const retry  = document.getElementById('retry');
 const reqBtn = document.getElementById('req');
 const resBox = document.getElementById('result');
 const titleEl= document.getElementById('title');
-const player = document.getElementById('player');
+let   player = document.getElementById('player');
 const toast  = document.getElementById('toast');
 
 let timer,startTime; const longPress=1000,dashMax=502; let rolling=false;
 
-/* 長押し判定 */
+/* ── 長押し判定 ---- */
 btn.addEventListener('pointerdown',e=>{
   if(rolling) return;
-  startTime=Date.now();document.getElementById('finger').style.opacity=.2;
-  timer=requestAnimationFrame(progress);e.preventDefault();
+  /* まず現在再生を確実に停止 */
+  player.src = "about:blank";
+
+  startTime=Date.now();
+  document.getElementById('finger').style.opacity=.2;
+  ring.style.strokeDashoffset=dashMax;
+  timer=requestAnimationFrame(progress);
+  e.preventDefault();
 });
 btn.addEventListener('pointerup',cancel);
 btn.addEventListener('pointerleave',cancel);
@@ -128,43 +131,5 @@ function progress(){
 }
 function cancel(){
   cancelAnimationFrame(timer);
-  ring.style.strokeDashoffset=dashMax;
   document.getElementById('finger').style.opacity=.8;
-  if(Date.now()-startTime<longPress*0.6) showToast();
-}
-function showToast(){toast.classList.add('show');
-  setTimeout(()=>toast.classList.remove('show'),1600);}
-
-/* ガチャ */
-function runGacha(){
-  if(rolling) return;rolling=true;
-  const list=window.PLAYLISTS.playlists;
-  const pick=list[Math.floor(Math.random()*list.length)];
-
-  titleEl.textContent='🎧 '+pick.title;
-  player.src=`https://www.youtube.com/embed/${pick.id}?autoplay=1&playsinline=1&loop=1&playlist=${pick.id}&controls=1`;
-  resBox.style.display='block';
-
-  gtag('event','gacha_play',{video_id:pick.id,title:pick.title});
-  makeIntentLink();rolling=false;
-}
-
-/* リクエスト投稿リンク */
-function makeIntentLink(){
-  const template=`@kkp_webninja #BGMガチャ追加希望\n`+
-                 `▶️ （ここに YouTube リンクを貼ってください）\n`+
-                 `ご感想やジャンル: `;
-  reqBtn.href   = `https://twitter.com/intent/tweet?text=${encodeURIComponent(template)}`;
-  reqBtn.target = '_blank';reqBtn.rel='noopener';
-  reqBtn.onclick= ()=> gtag('event','tweet_request');
-}
-
-/* もう一回！ → about:blank に切り替えて停止 */
-retry.onclick = () => {
-  player.src = "about:blank";               // ★確実に再生停止
-  resBox.style.display = 'none';
-  ring.style.strokeDashoffset = dashMax;
-  gtag('event','retry_click');
-};
-</script>
-</body></html>
+  if(Date.now()-startTime<lon
