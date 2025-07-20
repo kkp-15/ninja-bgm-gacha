@@ -42,6 +42,19 @@
         border:none;border-radius:99rem;background:var(--grad);color:#fff;
         box-shadow:0 6px 12px rgba(0,0,0,.15);cursor:pointer;margin:.4rem;}
 
+ /* ── X フッターボタン ── */
+ .x-footer{
+   position:fixed;left:50%;bottom:12px;transform:translateX(-50%);
+   z-index:50;
+ }
+ .x-footer a{
+   display:inline-block;padding:.65rem 1.6rem;font-size:.9rem;font-weight:bold;
+   border-radius:99rem;background:#000;color:#fff;text-decoration:none;
+   box-shadow:0 4px 10px rgba(0,0,0,.25);
+   transition:transform .2s;
+ }
+ .x-footer a:hover{transform:scale(1.06);}
+
  /* ── トースト ── */
  #toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);
         background:#333;color:#fff;font-size:.9rem;padding:.6rem 1.4rem;
@@ -67,15 +80,18 @@
   <h2 id="title"></h2>
   <iframe id="player" allow="autoplay; encrypted-media" playsinline></iframe><br>
   <button id="retry" class="btn">もう一回！</button>
-
-  <!-- ★ ここを <a> に変更 -->
   <a id="req" class="btn" style="background:#4267B2">🎶 リクエスト投稿</a>
 </section>
 
 <div id="toast">1 秒長押ししてください</div>
 
+<!-- 画面最下部に固定：X リンク -->
+<div class="x-footer">
+  <a href="https://x.com/kkp_webninja" target="_blank" rel="noopener">@kkp_webninja</a>
+</div>
+
 <script>
-/* ── 動画IDとタイトル ── */
+/* ── 動画ID & タイトル ── */
 window.PLAYLISTS = { playlists: [
   { id:"sO3IO8ITQbk", title:"Summer Chill Pop｜夏気分ラップ＆ポップ" },
   { id:"lY3x33Q9p7Y", title:"Lo‑fi Hawaiian Love｜ウクレレBGM" },
@@ -119,7 +135,7 @@ function cancel(){
 function showToast(){toast.classList.add('show');
   setTimeout(()=>toast.classList.remove('show'),1600);}
 
-/* ── ガチャ実行 ---- */
+/* ── ガチャ ---- */
 function runGacha(){
   if(rolling) return;rolling=true;
   const list=window.PLAYLISTS.playlists;
@@ -130,8 +146,7 @@ function runGacha(){
   resBox.style.display='block';
 
   gtag('event','gacha_play',{video_id:pick.id,title:pick.title});
-  makeIntentLink();
-  rolling=false;
+  makeIntentLink();rolling=false;
 }
 
 /* ── リクエスト投稿リンク ---- */
@@ -140,8 +155,7 @@ function makeIntentLink(){
                  `▶️ （ここに YouTube リンクを貼ってください）\n`+
                  `ご感想やジャンル: `;
   reqBtn.href   = `https://twitter.com/intent/tweet?text=${encodeURIComponent(template)}`;
-  reqBtn.target = '_blank';
-  reqBtn.rel    = 'noopener';
+  reqBtn.target = '_blank';reqBtn.rel='noopener';
   reqBtn.onclick= ()=> gtag('event','tweet_request');
 }
 
