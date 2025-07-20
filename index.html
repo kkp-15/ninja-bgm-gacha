@@ -132,4 +132,36 @@ function progress(){
 function cancel(){
   cancelAnimationFrame(timer);
   document.getElementById('finger').style.opacity=.8;
-  if(Date.now()-startTime<lon
+  if(Date.now()-startTime<longPress*0.6) showToast();
+}
+function showToast(){
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),1600);
+}
+
+/* ── ガチャ ---- */
+function runGacha(){
+  rolling=true;
+  const list=window.PLAYLISTS.playlists;
+  const pick=list[Math.floor(Math.random()*list.length)];
+
+  titleEl.textContent='🎧 '+pick.title;
+  player.src=`https://www.youtube.com/embed/${pick.id}?autoplay=1&playsinline=1&loop=1&playlist=${pick.id}&controls=1`;
+  resBox.style.display='block';
+
+  gtag('event','gacha_play',{video_id:pick.id,title:pick.title});
+  makeIntentLink();
+  rolling=false;
+}
+
+/* ── リクエスト投稿リンク ---- */
+function makeIntentLink(){
+  const template=`@kkp_webninja #BGMガチャ追加希望\n`+
+                 `▶️ （ここに YouTube リンクを貼ってください）\n`+
+                 `ご感想やジャンル: `;
+  reqBtn.href   = `https://twitter.com/intent/tweet?text=${encodeURIComponent(template)}`;
+  reqBtn.target = '_blank';reqBtn.rel='noopener';
+  reqBtn.onclick= ()=> gtag('event','tweet_request');
+}
+</script>
+</body></html>
