@@ -54,17 +54,22 @@
 
 <section id="result">
   <h2 id="title"></h2>
-  <iframe id="player" allowfullscreen playsinline></iframe><br>
+  <iframe id="player" allow="autoplay; encrypted-media" playsinline></iframe><br>
   <button id="retry" class="btn">もう一回！</button>
   <button id="req"   class="btn" style="background:#4267B2">🎶 リクエスト投稿</button>
 </section>
 
 <div id="toast">2 秒長押ししてください</div>
 
-<!-- プレイリスト一覧 -->
-<script src="playlists.js"></script>
 <script>
-/* --- DOM 参照 & 状態 --- */
+/* ---- プレイリスト & 動画 ID 一覧（適宜追加） ---- */
+window.PLAYLISTS = { playlists: [
+  { id: "PL4fGSI1pDJn6WfV4fAbAVrd6baUSZ6c3x", title: "Lo‑Fi Beats Playlist" },
+  { id: "sO3IO8ITQbk",                       title: "Summer Chill Pop｜夏気分ラップ＆ポップ" },
+  { id: "lY3x33Q9p7Y",                       title: "Lo‑fi Hawaiian Love｜ウクレレBGM" }
+]};
+
+/* ---- DOM 参照 & 状態 ---- */
 const ring   = document.getElementById('ring');
 const finger = document.getElementById('finger');
 const btn    = document.getElementById('roll');
@@ -75,81 +80,71 @@ const titleEl= document.getElementById('title');
 const player = document.getElementById('player');
 const toast  = document.getElementById('toast');
 
-let timer, startTime;          // 長押し計測
-const longPress = 2000;        // 2秒
-const dashMax   = 502;         // SVGリング長
-let rolling = false;
+let timer,startTime; const longPress=2000,dashMax=502; let rolling=false;
 
-/* --- 長押し計測 --- */
-btn.addEventListener('pointerdown', e=>{
+/* ---- 長押し計測 ---- */
+btn.addEventListener('pointerdown',e=>{
   if(rolling) return;
-  startTime = Date.now();
-  finger.style.opacity = .2;
-  timer = requestAnimationFrame(progress);
-  e.preventDefault();          // iOSメニュー防止
+  startTime=Date.now();
+  finger.style.opacity=.2;
+  timer=requestAnimationFrame(progress);
+  e.preventDefault();
 });
-btn.addEventListener('pointerup', cancel);
-btn.addEventListener('pointerleave', cancel);
-btn.addEventListener('pointercancel', cancel);
+btn.addEventListener('pointerup',cancel);
+btn.addEventListener('pointerleave',cancel);
+btn.addEventListener('pointercancel',cancel);
 
 function progress(){
-  const rate = Math.min((Date.now() - startTime) / longPress, 1);
-  ring.style.strokeDashoffset = dashMax * (1 - rate);
-  if(rate < 1){
-    timer = requestAnimationFrame(progress);
-  }else{
-    runGacha();
-  }
+  const r=Math.min((Date.now()-startTime)/longPress,1);
+  ring.style.strokeDashoffset=dashMax*(1-r);
+  if(r<1){timer=requestAnimationFrame(progress);}else{runGacha();}
 }
 function cancel(){
   cancelAnimationFrame(timer);
-  ring.style.strokeDashoffset = dashMax;
-  finger.style.opacity = .7;
-  if(Date.now() - startTime < longPress * .6) showToast();
+  ring.style.strokeDashoffset=dashMax;
+  finger.style.opacity=.7;
+  if(Date.now()-startTime<longPress*0.6) showToast();
 }
 function showToast(){
   toast.classList.add('show');
-  setTimeout(()=>toast.classList.remove('show'), 1600);
+  setTimeout(()=>toast.classList.remove('show'),1600);
 }
 
-/* --- ガチャ実行 --- */
+/* ---- ガチャ実行 ---- */
 function runGacha(){
   if(rolling) return;
-  rolling = true;
+  rolling=true;
 
   const list = window.PLAYLISTS.playlists;
-  const pick = list[Math.floor(Math.random() * list.length)];
+  const pick = list[Math.floor(Math.random()*list.length)];
 
   // タイトル表示
-  titleEl.textContent = '🎧 ' + pick.title;
+  titleEl.textContent='🎧 '+pick.title;
 
-  // プレイリストか動画か判定してURL生成
+  // プレイリストか単一動画かでURL分岐
   const url = pick.id.startsWith("PL")
     ? `https://www.youtube.com/embed?listType=playlist&list=${pick.id}&autoplay=1&playsinline=1&controls=1`
     : `https://www.youtube.com/embed/${pick.id}?autoplay=1&playsinline=1&loop=1&playlist=${pick.id}&controls=1`;
 
-  player.src = url;
-  resBox.style.display = 'block';
+  player.src=url;
+  resBox.style.display='block';
 
   makeIntentLink();
-  rolling = false;
+  rolling=false;
 }
 
-/* --- リクエスト投稿リンク生成 --- */
+/* ---- リクエスト投稿リンク ---- */
 function makeIntentLink(){
   const template =
-    `@kkp_webninja #BGMガチャ追加希望\n` +
-    `▶️ （ここに YouTube リンクを貼ってください）\n` +
+    `@kkp_webninja #BGMガチャ追加希望\n`+
+    `▶️ （ここに YouTube リンクを貼ってください）\n`+
     `ご感想やジャンル: `;
   reqBtn.href   = `https://twitter.com/intent/tweet?text=${encodeURIComponent(template)}`;
   reqBtn.target = '_blank';
   reqBtn.rel    = 'noopener';
 }
 
-/* --- リセットボタン --- */
-retry.onclick = () => {
-  resBox.style.display = 'none';
-  ring.style.strokeDashoffset = dashMax;
-};
+/* ---- リセット ---- */
+retry.onclick=()=>{resBox.style.display='none'; ring.style.strokeDashoffset=dashMax;};
 </script>
 </body></html>
