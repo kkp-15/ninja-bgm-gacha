@@ -12,7 +12,8 @@
  #roll{ position:relative;width:170px;height:170px;margin:40px auto 0;
         border:none;border-radius:50%;color:#fff;font-size:1.05rem;
         background:var(--grad);box-shadow:0 8px 16px rgba(0,0,0,.2);
-        user-select:none;cursor:pointer; }
+        user-select:none;cursor:pointer;
+        -webkit-touch-callout:none; }     /* ★ Chromebook 長押しメニュー抑制 */
  #roll span{display:block;line-height:1.4;}
  #finger{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
          font-size:2.6rem;opacity:.7;animation:pulse 1.2s infinite;}
@@ -44,7 +45,7 @@
 <h1>🎲 BGMガチャ</h1>
 
 <button id="roll">
-  <span>ガチャを回す（約2秒長押し）</span>
+  <span>ガチャを回す（約1秒長押し）</span>
   <div id="finger">👇</div>
   <svg viewBox="0 0 180 180"><circle id="ring" cx="90" cy="90" r="80"/></svg>
 </button>
@@ -59,17 +60,17 @@
   <button id="req"   class="btn" style="background:#4267B2">🎶 リクエスト投稿</button>
 </section>
 
-<div id="toast">2 秒長押ししてください</div>
+<div id="toast">1 秒長押ししてください</div>
 
 <script>
-/* ---- プレイリスト & 動画 ID 一覧（適宜追加） ---- */
+/* ---- プレイリスト & 動画一覧（好きに追加） ---- */
 window.PLAYLISTS = { playlists: [
   { id: "PL4fGSI1pDJn6WfV4fAbAVrd6baUSZ6c3x", title: "Lo‑Fi Beats Playlist" },
   { id: "sO3IO8ITQbk",                       title: "Summer Chill Pop｜夏気分ラップ＆ポップ" },
   { id: "lY3x33Q9p7Y",                       title: "Lo‑fi Hawaiian Love｜ウクレレBGM" }
-]};
+] };
 
-/* ---- DOM 参照 & 状態 ---- */
+/* ---- DOM & 状態 ---- */
 const ring   = document.getElementById('ring');
 const finger = document.getElementById('finger');
 const btn    = document.getElementById('roll');
@@ -80,7 +81,7 @@ const titleEl= document.getElementById('title');
 const player = document.getElementById('player');
 const toast  = document.getElementById('toast');
 
-let timer,startTime; const longPress=2000,dashMax=502; let rolling=false;
+let timer,startTime; const longPress=1000,dashMax=502; let rolling=false;
 
 /* ---- 長押し計測 ---- */
 btn.addEventListener('pointerdown',e=>{
@@ -93,6 +94,8 @@ btn.addEventListener('pointerdown',e=>{
 btn.addEventListener('pointerup',cancel);
 btn.addEventListener('pointerleave',cancel);
 btn.addEventListener('pointercancel',cancel);
+/* ★ 右クリックメニュー抑制 */
+btn.addEventListener('contextmenu',e=>e.preventDefault());
 
 function progress(){
   const r=Math.min((Date.now()-startTime)/longPress,1);
@@ -110,7 +113,7 @@ function showToast(){
   setTimeout(()=>toast.classList.remove('show'),1600);
 }
 
-/* ---- ガチャ実行 ---- */
+/* ---- ガチャ ---- */
 function runGacha(){
   if(rolling) return;
   rolling=true;
@@ -118,14 +121,10 @@ function runGacha(){
   const list = window.PLAYLISTS.playlists;
   const pick = list[Math.floor(Math.random()*list.length)];
 
-  // タイトル表示
   titleEl.textContent='🎧 '+pick.title;
-
-  // プレイリストか単一動画かでURL分岐
   const url = pick.id.startsWith("PL")
     ? `https://www.youtube.com/embed?listType=playlist&list=${pick.id}&autoplay=1&playsinline=1&controls=1`
     : `https://www.youtube.com/embed/${pick.id}?autoplay=1&playsinline=1&loop=1&playlist=${pick.id}&controls=1`;
-
   player.src=url;
   resBox.style.display='block';
 
