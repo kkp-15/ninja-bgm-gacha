@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BGMガチャ</title>
 
-<!-- === Google Analytics (GA4) === -->
+<!-- === Google Analytics (GA4) === -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-2LM85GJN0L"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -19,7 +19,7 @@
  body  { font-family:sans-serif;text-align:center;margin:0;background:#fafafa; }
  h1    { margin:2rem 0;font-size:1.9rem; }
 
- /* ── ガチャボタン ── */
+ /* ガチャボタン */
  #roll{
   position:relative;width:170px;height:170px;margin:40px auto 0;
   border:none;border-radius:50%;color:#fff;background:var(--grad);
@@ -36,27 +36,23 @@
        stroke-dasharray:502;stroke-dashoffset:502;
        transition:stroke-dashoffset .06s linear;}
 
- /* ── 結果カード ── */
+ /* 結果カード */
  #result{display:none;margin-top:32px;}
  iframe{width:100%;max-width:560px;height:315px;border:none;}
  .btn  {display:inline-block;padding:.85rem 2.2rem;font-size:1rem;text-decoration:none;
         border:none;border-radius:99rem;background:var(--grad);color:#fff;
         box-shadow:0 6px 12px rgba(0,0,0,.15);cursor:pointer;margin:.4rem;}
 
- /* ── X フッターバー ── */
- .x-footer{
-   background:#fff;border-top:1px solid #e0e0e0;
-   padding:12px 0;display:flex;justify-content:center;
- }
- .x-footer a{
-   display:inline-block;min-width:140px;text-align:center;
-   padding:.55rem 1.4rem;font-size:.9rem;font-weight:bold;
-   border-radius:99rem;background:var(--grad);color:#fff;text-decoration:none;
-   box-shadow:0 3px 8px rgba(0,0,0,.15);transition:transform .18s;
- }
+ /* X フッター */
+ .x-footer{background:#fff;border-top:1px solid #e0e0e0;
+           padding:12px 0;display:flex;justify-content:center;}
+ .x-footer a{display:inline-block;min-width:140px;text-align:center;
+             padding:.55rem 1.4rem;font-size:.9rem;font-weight:bold;
+             border-radius:99rem;background:var(--grad);color:#fff;text-decoration:none;
+             box-shadow:0 3px 8px rgba(0,0,0,.15);transition:transform .18s;}
  .x-footer a:hover{transform:translateY(-2px);}
 
- /* ── トースト ── */
+ /* トースト */
  #toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);
         background:#333;color:#fff;font-size:.9rem;padding:.6rem 1.4rem;
         border-radius:8px;opacity:0;pointer-events:none;transition:opacity .3s;}
@@ -89,14 +85,14 @@
 </footer>
 
 <script>
-/* ── 再生リスト ── */
-window.PLAYLISTS = { playlists: [
+/* プレイリスト */
+window.PLAYLISTS = { playlists:[
   { id:"sO3IO8ITQbk", title:"Summer Chill Pop｜夏気分ラップ＆ポップ" },
   { id:"lY3x33Q9p7Y", title:"Lo‑fi Hawaiian Love｜ウクレレBGM" },
   { id:"BYra5__dZt8", title:"Deep Ocean Beats" }
 ] };
 
-/* ── DOM & 状態 ---- */
+/* DOM & 状態 */
 const ring   = document.getElementById('ring');
 const btn    = document.getElementById('roll');
 const reqBtn = document.getElementById('req');
@@ -107,16 +103,21 @@ const toast  = document.getElementById('toast');
 
 let timer,startTime; const longPress=1000,dashMax=502; let rolling=false;
 
-/* ── 長押し判定 ---- */
+/* iframe リセット */
+function resetPlayer(){
+  const newFrame = player.cloneNode();
+  player.replaceWith(newFrame);
+  player = newFrame;
+}
+
+/* 長押し開始 */
 btn.addEventListener('pointerdown',e=>{
   if(rolling) return;
-  /* まず現在再生を確実に停止 */
-  player.src = "about:blank";
-
-  startTime=Date.now();
+  resetPlayer();                       // 再生停止
+  startTime = Date.now();
   document.getElementById('finger').style.opacity=.2;
-  ring.style.strokeDashoffset=dashMax;
-  timer=requestAnimationFrame(progress);
+  ring.style.strokeDashoffset = dashMax;
+  timer = requestAnimationFrame(progress);
   e.preventDefault();
 });
 btn.addEventListener('pointerup',cancel);
@@ -126,12 +127,13 @@ btn.addEventListener('contextmenu',e=>e.preventDefault());
 
 function progress(){
   const r=Math.min((Date.now()-startTime)/longPress,1);
-  ring.style.strokeDashoffset=dashMax*(1-r);
+  ring.style.strokeDashoffset = dashMax*(1-r);
   if(r<1){timer=requestAnimationFrame(progress);}else{runGacha();}
 }
 function cancel(){
   cancelAnimationFrame(timer);
-  document.getElementById('finger').style.opacity=.8;
+  ring.style.strokeDashoffset = dashMax;          /* ← 追加で必ずリセット */
+  document.getElementById('finger').style.opacity = .8;
   if(Date.now()-startTime<longPress*0.6) showToast();
 }
 function showToast(){
@@ -139,29 +141,32 @@ function showToast(){
   setTimeout(()=>toast.classList.remove('show'),1600);
 }
 
-/* ── ガチャ ---- */
+/* ガチャ */
 function runGacha(){
-  rolling=true;
-  const list=window.PLAYLISTS.playlists;
-  const pick=list[Math.floor(Math.random()*list.length)];
+  rolling = true;
+  const pick = window.PLAYLISTS.playlists[Math.floor(Math.random()*window.PLAYLISTS.playlists.length)];
 
-  titleEl.textContent='🎧 '+pick.title;
-  player.src=`https://www.youtube.com/embed/${pick.id}?autoplay=1&playsinline=1&loop=1&playlist=${pick.id}&controls=1`;
-  resBox.style.display='block';
+  titleEl.textContent = '🎧 ' + pick.title;
+  player.src = `https://www.youtube.com/embed/${pick.id}?autoplay=1&playsinline=1&loop=1&playlist=${pick.id}&controls=1`;
+  resBox.style.display = 'block';
 
   gtag('event','gacha_play',{video_id:pick.id,title:pick.title});
   makeIntentLink();
-  rolling=false;
+
+  ring.style.strokeDashoffset = dashMax;          // 実行後もリセット
+  document.getElementById('finger').style.opacity = .8;
+  rolling = false;
 }
 
-/* ── リクエスト投稿リンク ---- */
+/* 投稿リンク */
 function makeIntentLink(){
   const template=`@kkp_webninja #BGMガチャ追加希望\n`+
                  `▶️ （ここに YouTube リンクを貼ってください）\n`+
                  `ご感想やジャンル: `;
-  reqBtn.href   = `https://twitter.com/intent/tweet?text=${encodeURIComponent(template)}`;
-  reqBtn.target = '_blank';reqBtn.rel='noopener';
-  reqBtn.onclick= ()=> gtag('event','tweet_request');
+  reqBtn.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(template)}`;
+  reqBtn.target = '_blank';
+  reqBtn.rel = 'noopener';
+  reqBtn.onclick = ()=> gtag('event','tweet_request');
 }
 </script>
 </body></html>
