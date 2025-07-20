@@ -1,7 +1,7 @@
 window.PLAYLISTS = {
   playlists: [
-    { id: "PL9tY0BWXOZFvhszp6a...", title: "Lo‑Fi Beats" },
-    { id: "PLTGx6ZPj5Y_cchdx...",   title: "Chill & Relax" },
-    { id: "PLabcdEFG1234",          title: "My Chill Mix" } // ← ★ 末尾にもカンマ不要な JS 仕様
+    { id: "sO3IO8ITQbk", title: "Summer Chill Pop ｜夏気分高まるラップ＆ポップ" },
+    { id: "lY3x33Q9p7Y", title: "Lo‑fi Hawaiian Love｜甘くやさしいウクレレBGM" },
+// 既存プレイリスト…
   ]
 };
