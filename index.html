@@ -38,9 +38,9 @@
  /* ── 結果カード ── */
  #result{display:none;margin-top:32px;}
  iframe{width:100%;max-width:560px;height:315px;border:none;}
- .btn  {padding:.85rem 2.2rem;font-size:1rem;border:none;border-radius:99rem;
-        background:var(--grad);color:#fff;box-shadow:0 6px 12px rgba(0,0,0,.15);
-        cursor:pointer;margin:.4rem;}
+ .btn  {display:inline-block;padding:.85rem 2.2rem;font-size:1rem;text-decoration:none;
+        border:none;border-radius:99rem;background:var(--grad);color:#fff;
+        box-shadow:0 6px 12px rgba(0,0,0,.15);cursor:pointer;margin:.4rem;}
 
  /* ── トースト ── */
  #toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);
@@ -67,20 +67,22 @@
   <h2 id="title"></h2>
   <iframe id="player" allow="autoplay; encrypted-media" playsinline></iframe><br>
   <button id="retry" class="btn">もう一回！</button>
-  <button id="req"   class="btn" style="background:#4267B2">🎶 リクエスト投稿</button>
+
+  <!-- ★ ここを <a> に変更 -->
+  <a id="req" class="btn" style="background:#4267B2">🎶 リクエスト投稿</a>
 </section>
 
 <div id="toast">1 秒長押ししてください</div>
 
 <script>
-/* ── 動画IDとタイトル（好きに追加） ── */
+/* ── 動画IDとタイトル ── */
 window.PLAYLISTS = { playlists: [
   { id:"sO3IO8ITQbk", title:"Summer Chill Pop｜夏気分ラップ＆ポップ" },
   { id:"lY3x33Q9p7Y", title:"Lo‑fi Hawaiian Love｜ウクレレBGM" },
   { id:"BYra5__dZt8", title:"Deep Ocean Beats" }
 ] };
 
-/* ── DOM & 状態 ── */
+/* ── DOM & 状態 ---- */
 const ring   = document.getElementById('ring');
 const btn    = document.getElementById('roll');
 const retry  = document.getElementById('retry');
@@ -92,7 +94,7 @@ const toast  = document.getElementById('toast');
 
 let timer,startTime; const longPress=1000,dashMax=502; let rolling=false;
 
-/* ── 長押し判定 ── */
+/* ── 長押し判定 ---- */
 btn.addEventListener('pointerdown',e=>{
   if(rolling) return;
   startTime=Date.now();document.getElementById('finger').style.opacity=.2;
@@ -101,7 +103,7 @@ btn.addEventListener('pointerdown',e=>{
 btn.addEventListener('pointerup',cancel);
 btn.addEventListener('pointerleave',cancel);
 btn.addEventListener('pointercancel',cancel);
-btn.addEventListener('contextmenu',e=>e.preventDefault());   // Chromebook右クリ抑制
+btn.addEventListener('contextmenu',e=>e.preventDefault());
 
 function progress(){
   const r=Math.min((Date.now()-startTime)/longPress,1);
@@ -117,7 +119,7 @@ function cancel(){
 function showToast(){toast.classList.add('show');
   setTimeout(()=>toast.classList.remove('show'),1600);}
 
-/* ── ガチャ実行（単一動画） ── */
+/* ── ガチャ実行 ---- */
 function runGacha(){
   if(rolling) return;rolling=true;
   const list=window.PLAYLISTS.playlists;
@@ -127,22 +129,23 @@ function runGacha(){
   player.src=`https://www.youtube.com/embed/${pick.id}?autoplay=1&playsinline=1&loop=1&playlist=${pick.id}&controls=1`;
   resBox.style.display='block';
 
-  gtag('event','gacha_play',{video_id:pick.id,title:pick.title});  // GAイベント
+  gtag('event','gacha_play',{video_id:pick.id,title:pick.title});
   makeIntentLink();
   rolling=false;
 }
 
-/* ── リクエスト投稿リンク ── */
+/* ── リクエスト投稿リンク ---- */
 function makeIntentLink(){
   const template=`@kkp_webninja #BGMガチャ追加希望\n`+
                  `▶️ （ここに YouTube リンクを貼ってください）\n`+
                  `ご感想やジャンル: `;
-  reqBtn.href=`https://twitter.com/intent/tweet?text=${encodeURIComponent(template)}`;
-  reqBtn.target='_blank';reqBtn.rel='noopener';
+  reqBtn.href   = `https://twitter.com/intent/tweet?text=${encodeURIComponent(template)}`;
+  reqBtn.target = '_blank';
+  reqBtn.rel    = 'noopener';
+  reqBtn.onclick= ()=> gtag('event','tweet_request');
 }
-reqBtn.addEventListener('click',()=>gtag('event','tweet_request'));
 
-/* ── リセット ── */
+/* ── リセット ---- */
 retry.onclick=()=>{resBox.style.display='none';ring.style.strokeDashoffset=dashMax;
                    gtag('event','retry_click');};
 </script>
